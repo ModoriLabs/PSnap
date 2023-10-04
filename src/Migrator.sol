@@ -51,13 +51,13 @@ contract Migrator is UpgradeableBase {
         address sender = _msgSender();
         uint256 vaultId = nextVaultId[sender];
 
-        // Use SafeTransfer
         srcToken.safeTransferFrom(sender, address(this), amount);
 
-        vaults[sender][vaultId] = Vault(amount, block.timestamp, false);
+        vaults[sender][vaultId] = Vault({ amount: amount, depositTs: block.timestamp, claimed: false });
         nextVaultId[sender] += 1;
     }
 
+    // TODO: check zero in, one out
     // @dev Set vault.claimed true, not delete the vault
     function claim(uint256 id) public {
         address sender = _msgSender();
@@ -80,7 +80,8 @@ contract Migrator is UpgradeableBase {
             srcTokenAmount = vault.amount - srcTokenAmountToExchange;
         } else if (block.timestamp <= depositTs + maturity + bonusPeriod) {
             // case2. In Bonus period (37 weeks)
-            uint256 srcTokenAmountToExchange = vault.amount * duration / maturity;
+            uint256 passedBonusPeriod = block.timestamp - depositTs - maturity;
+            uint256 srcTokenAmountToExchange = vault.amount * (maturity + passedBonusPeriod) / maturity;
             destTokenAmount = srcTokenAmountToExchange * exchangeRatio / WAD;
             // srcTokenAmount is 0
         } else {
