@@ -2,7 +2,7 @@
 pragma solidity 0.8.21;
 
 import { TestBase } from "test/TestBase.sol";
-import { Migrator } from "src/Migrator.sol";
+import { Migrator, IMigrator } from "src/Migrator.sol";
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { UpgradeableBase } from "src/UpgradeableBase.sol";
@@ -31,7 +31,7 @@ contract Migrator_Test is TestBase {
             exchangeRatio: 10,
             maturity: 143 weeks,
             bonusPeriod: 37 weeks,
-            minDeposit: 10000
+            minDeposit: 10000e18
         });
 
         migrator.initialize(
@@ -71,6 +71,20 @@ contract Migrator_Basic_Test is Migrator_Test {
         migrator.upgradeTo(address(0));
     }
 
+    function test_InitializeImpl() public {
+        vm.expectRevert("Initializable: contract is already initialized");
+        migratorImpl.initialize(
+            IERC20(mach),
+            IERC20(dsp),
+            0,
+            0,
+            0,
+            0,
+            MANAGER,
+            PAUSER
+        );
+    }
+
     function test_UpgradeImpl() public {
         vm.expectRevert("Function must be called through delegatecall");
         migratorImpl.upgradeTo(address(0));
@@ -89,27 +103,40 @@ contract Migrator_Deposit is Migrator_Test {
         mach.approve(address(migrator), type(uint256).max);
     }
 
-    function test_RevertWhen_AmountLessthanMinDeposit() public {
+    function test_RevertWhen_AmountLessThanMinDeposit() public {
         uint256 amount = migrator.minDeposit() - 1;
         vm.expectRevert("Less than minDeposit");
         migrator.deposit(amount);
     }
 
-    // Q. What if two tx in one block? Simply different
     function test_TwoDeposits_ShouldBeDifferent() public {
-        // deposit
-        // deposit
+        uint256 amount = migrator.minDeposit();
+        vm.startPrank(alice);
+        migrator.deposit(amount);
+        migrator.deposit(amount * 2);
+
+        (uint256 amount1,,) = migrator.vaults(alice, 0);
+        (uint256 amount2,,) = migrator.vaults(alice, 1);
+        assertEq(amount1, amount);
+        assertEq(amount2, amount * 2);
     }
 
 }
 
 contract Migrator_Claim_BeforeMaturity is Migrator_Test {
+    uint256 internal depositAmount;
+
     function setUp() public override {
         super.setUp();
+
+        vm.startPrank(alice);
+        mach.approve(address(migrator), type(uint256).max);
+        depositAmount = migrator.minDeposit();
+        migrator.deposit(depositAmount);
     }
 
     function test_ExchangeRatio() public {
-
+        migrator.claim(0);
     }
 
     function test_vault_deleted() public {

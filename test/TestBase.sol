@@ -20,7 +20,7 @@ contract TestBase is PRBTest, StdCheats {
         mach = new MockERC20("MACH", "MACH", 18);
         dsp = new MockERC20("DSP", "DSP", 18);
 
-        uint256 initialBalance = 10000e18;
+        uint256 initialBalance = 1_000_000e18;
 
         _faucet(mach, alice, initialBalance);
         _faucet(mach, bob, initialBalance * 3);

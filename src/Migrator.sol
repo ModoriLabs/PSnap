@@ -6,6 +6,12 @@ import { UpgradeableBase } from "./UpgradeableBase.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface IMigrator {
+    struct Vault {
+        uint256 amount;
+        uint256 depositTs;
+        bool claimed;
+    }
+
     function deposit(uint256 amount) external;
     function claim(uint256 id) external;
 }
@@ -17,17 +23,11 @@ contract Migrator is UpgradeableBase, IMigrator {
     uint256 public maturity;
     uint256 public bonusPeriod;
     uint256 public minDeposit;
-    mapping(address user => mapping(uint256 id => Vault)) internal vaults;
+    mapping(address user => mapping(uint256 id => Vault)) public vaults;
     mapping(address user => uint256 id) public nextVaultId;
     uint256 constant WAD = 1e18;
 
     using SafeERC20 for IERC20;
-
-    struct Vault {
-        uint256 amount;
-        uint256 depositTs;
-        bool claimed;
-    }
 
     constructor() {
         _disableInitializers();
@@ -72,7 +72,7 @@ contract Migrator is UpgradeableBase, IMigrator {
     function claim(uint256 id) public {
         address sender = _msgSender();
 
-        require(nextVaultId[sender] <= id, "Vault Not Found");
+        require(id < nextVaultId[sender], "Vault Not Found");
         Vault memory vault = vaults[sender][id];
 
         require(!vault.claimed, "Vault Already Claimed");
