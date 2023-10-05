@@ -9,7 +9,7 @@ interface IMigrator {
     struct Vault {
         uint256 amount;
         uint256 depositTs;
-        bool claimed;
+        bool active;
     }
 
     function deposit(uint256 amount) external;
@@ -63,19 +63,19 @@ contract Migrator is UpgradeableBase, IMigrator {
 
         srcToken.safeTransferFrom(sender, address(this), amount);
 
-        vaults[sender][vaultId] = Vault({ amount: amount, depositTs: block.timestamp, claimed: false });
+        vaults[sender][vaultId] = Vault({ amount: amount, depositTs: block.timestamp, active: true });
         nextVaultId[sender] += 1;
     }
 
     // TODO: check zero in, one out
-    // @dev Set vault.claimed true, not delete the vault
+    // @dev Set vault.active false, not delete the vault
     function claim(uint256 id) public {
         address sender = _msgSender();
 
         require(id < nextVaultId[sender], "Vault Not Found");
         Vault memory vault = vaults[sender][id];
 
-        require(!vault.claimed, "Vault Already Claimed");
+        require(vault.active, "Vault Already Claimed");
 
         uint256 srcTokenAmount = 0;
         uint256 destTokenAmount = 0;
@@ -101,7 +101,8 @@ contract Migrator is UpgradeableBase, IMigrator {
             // srcTokenAmount is 0
         }
 
-        vault.claimed = true;
+        // Update storage
+        vaults[sender][id].active = false;
 
         if (srcTokenAmount != 0) {
             srcToken.safeTransfer(sender, srcTokenAmount);

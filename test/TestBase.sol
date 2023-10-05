@@ -11,6 +11,8 @@ contract TestBase is PRBTest, StdCheats {
     IERC20 internal mach;
     IERC20 internal dsp;
 
+    uint256 constant WAD = 1e18;
+
     address internal MANAGER = address(0x1);
     address internal PAUSER = address(0x2);
     address internal alice = address(0x3);
@@ -29,5 +31,10 @@ contract TestBase is PRBTest, StdCheats {
     function _faucet(IERC20 token, address receiver, uint256 amount) internal {
         uint256 balance = token.balanceOf(receiver);
         deal(address(token), receiver, balance + amount, true);
+    }
+
+    function _label() internal {
+        vm.label(address(mach), "MACH");
+        vm.label(address(dsp), "DSP");
     }
 }
