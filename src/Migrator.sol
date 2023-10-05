@@ -5,12 +5,17 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { UpgradeableBase } from "./UpgradeableBase.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract Migrator is UpgradeableBase {
-    IERC20 internal srcToken;
-    IERC20 internal destToken;
-    uint256 internal exchangeRatio;
-    uint256 internal maturity;
-    uint256 internal bonusPeriod;
+interface IMigrator {
+
+}
+
+contract Migrator is UpgradeableBase, IMigrator {
+    IERC20 public srcToken;
+    IERC20 public destToken;
+    uint256 public exchangeRatio;
+    uint256 public maturity;
+    uint256 public bonusPeriod;
+    uint256 public minDeposit;
     mapping(address user => mapping(uint256 id => Vault)) internal vaults;
     mapping(address user => uint256 id) public nextVaultId;
     uint256 constant WAD = 1e18;
@@ -34,6 +39,7 @@ contract Migrator is UpgradeableBase {
         uint256 _exchangeRatio,
         uint256 _maturity,
         uint256 _bonusPeriod,
+        uint256 _minDeposit,
         address manager,
         address pauser
     ) public initializer {
@@ -45,9 +51,12 @@ contract Migrator is UpgradeableBase {
         exchangeRatio = _exchangeRatio;
         maturity = _maturity;
         bonusPeriod = _bonusPeriod;
+        minDeposit = _minDeposit;
     }
 
     function deposit(uint256 amount) public {
+        require (amount >= minDeposit, "Less than minDeposit");
+
         address sender = _msgSender();
         uint256 vaultId = nextVaultId[sender];
 
@@ -87,7 +96,7 @@ contract Migrator is UpgradeableBase {
         } else {
             // case3. After Bonus period (37 weeks)
             uint256 srcTokenAmountToExchange = vault.amount * (maturity + bonusPeriod) / maturity;
-            destTokenAmount = vault.amount * exchangeRatio / WAD;
+            destTokenAmount = srcTokenAmountToExchange * exchangeRatio / WAD;
             // srcTokenAmount is 0
         }
 

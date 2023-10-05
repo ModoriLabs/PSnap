@@ -21,7 +21,7 @@ abstract contract UpgradeableBase is AccessControlUpgradeable, UUPSUpgradeable, 
         _grantRole(PAUSER_ROLE, pauser);
     }
 
-    function _authorizeUpgrade(address) internal override onlyRole(DEFAULT_ADMIN_ROLE) { }
+    function _authorizeUpgrade(address) internal override onlyManager { }
 
     function pause() external onlyRole(PAUSER_ROLE) {
         super._pause();
@@ -35,9 +35,11 @@ abstract contract UpgradeableBase is AccessControlUpgradeable, UUPSUpgradeable, 
         _grantRole(MANAGER_ROLE, _manager);
     }
 
-    function _requireManagerRole() internal view {
+    modifier onlyManager() {
         if (!hasRole(MANAGER_ROLE, _msgSender())) {
             revert NotManager();
         }
+
+        _;
     }
 }
