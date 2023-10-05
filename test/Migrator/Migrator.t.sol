@@ -128,14 +128,34 @@ contract Migrator_Deposit is Migrator_Test {
     }
 
     function test_vault_become_active() public {
-        uint256 amount = migrator.minDeposit();
-        vm.startPrank(alice);
-        migrator.deposit(amount);
+        _deposit();
 
         (,, bool active) = migrator.vaults(alice, 0);
         assertTrue(active);
     }
+
+    function test_vault_write_depositTs() public {
+        _deposit();
+
+        (,uint256 depositTs,) = migrator.vaults(alice, 0);
+        assertEq(depositTs, block.timestamp);
+    }
+
+    function test_nextId_increment() public {
+        _deposit();
+
+        uint256 nextId = migrator.nextVaultId(alice);
+        assertEq(nextId, 1);
+
+    }
+
+    function _deposit() internal {
+        uint256 amount = migrator.minDeposit();
+        vm.startPrank(alice);
+        migrator.deposit(amount);
+    }
 }
+
 
 contract Migrator_Claim_BeforeDeposit is Migrator_Test {
     function test_RevertWhen_Claim_BeforeDeposit() public {
@@ -256,29 +276,33 @@ contract Migrator_Claim_AfterMaturity_InBonusPeriod is Migrator_One_Deposit_Scen
 }
 
 contract Migrator_Claim_AfterMaturity_AfterBonusPeriod is Migrator_One_Deposit_Scenario {
+    uint256 internal elapsed;
+
     function setUp() public override {
         super.setUp();
+        elapsed = config.maturity + config.bonusPeriod + 10000 weeks;
+        skip(elapsed);
     }
 
     function test_ExchangeRatio_PlusMaxBonus() public {
-        /*
-        uint256 amount = 100;
-        vm.startPrank(alice);
-        mach.approve(address(migrator), amount);
-        migrator.deposit(amount);
+        uint256 destAmount = depositAmount * config.exchangeRatio * (config.maturity + config.bonusPeriod) / config.maturity / WAD;
+        assertEq(destAmount, 150000e18); // 10000 -> 10000 * 1500% = 101000e18
+        uint256 beforeMachBalance = mach.balanceOf(alice);
+
+        vm.expectEmit(true, true, true, true, address(dsp));
+        emit Transfer(address(migrator), alice, destAmount);
 
         migrator.claim(0);
-        vm.expectEmit(true, true, true, true, address(mach));
-        emit Transfer(address(migrator), alice, amount);
-//        vm.expectEmit(true, true, true, true, address(dsp));
-//        emit Transfer(address(migrator), alice, 1);
 
-        vm.stopPrank();
-*/
+        uint256 afterMachBalance = mach.balanceOf(alice);
+        assertEq(beforeMachBalance, afterMachBalance);
     }
 
     function test_vault_deleted() public {
+        migrator.claim(0);
 
+        (,, bool active) = migrator.vaults(alice, 0);
+        assertFalse(active);
     }
 }
 
