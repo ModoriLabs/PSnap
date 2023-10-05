@@ -6,7 +6,8 @@ import { UpgradeableBase } from "./UpgradeableBase.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 interface IMigrator {
-
+    function deposit(uint256 amount) external;
+    function claim(uint256 id) external;
 }
 
 contract Migrator is UpgradeableBase, IMigrator {

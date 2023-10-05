@@ -90,7 +90,7 @@ contract Migrator_Deposit is Migrator_Test {
     }
 
     function test_RevertWhen_AmountLessthanMinDeposit() public {
-        uint256 amount = migrator.minDeposit();
+        uint256 amount = migrator.minDeposit() - 1;
         vm.expectRevert("Less than minDeposit");
         migrator.deposit(amount);
     }
