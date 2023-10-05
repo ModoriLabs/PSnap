@@ -34,6 +34,10 @@ contract Migrator is UpgradeableBase, IMigrator {
     }
 
     /// @dev Use portfolio.paused() for pausable
+    /// @param _exchangeRatio decimal 18
+    /// @param _maturity seconds
+    /// @param _bonusPeriod seconds
+    /// @param _minDeposit decimal of source token
     function initialize(
         IERC20 _src,
         IERC20 _dest,
@@ -41,10 +45,9 @@ contract Migrator is UpgradeableBase, IMigrator {
         uint256 _maturity,
         uint256 _bonusPeriod,
         uint256 _minDeposit,
-        address manager,
-        address pauser
+        address manager
     ) public initializer {
-        __UpgradeableBase_init(manager, pauser);
+        __UpgradeableBase_init(manager);
         _grantManagerRole(manager);
 
         srcToken = _src;
@@ -55,7 +58,7 @@ contract Migrator is UpgradeableBase, IMigrator {
         minDeposit = _minDeposit;
     }
 
-    function deposit(uint256 amount) public {
+    function deposit(uint256 amount) public whenNotPaused {
         require (amount >= minDeposit, "Less than minDeposit");
 
         address sender = _msgSender();
@@ -69,7 +72,7 @@ contract Migrator is UpgradeableBase, IMigrator {
 
     // TODO: check zero in, one out
     // @dev Set vault.active false, not delete the vault
-    function claim(uint256 id) public {
+    function claim(uint256 id) public whenNotPaused {
         address sender = _msgSender();
 
         require(id < nextVaultId[sender], "Vault Not Found");

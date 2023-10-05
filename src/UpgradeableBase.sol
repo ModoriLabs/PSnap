@@ -8,26 +8,22 @@ import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/securit
 abstract contract UpgradeableBase is AccessControlUpgradeable, UUPSUpgradeable, PausableUpgradeable {
     error NotManager();
 
-    // keccak256("PAUSER_ROLE")
-    bytes32 public constant PAUSER_ROLE = 0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a;
-
     // keccak256("MANAGER_ROLE")
     bytes32 public constant MANAGER_ROLE = 0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08;
 
-    function __UpgradeableBase_init(address admin, address pauser) internal onlyInitializing {
+    function __UpgradeableBase_init(address admin) internal onlyInitializing {
         __AccessControl_init();
         __Pausable_init();
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(PAUSER_ROLE, pauser);
     }
 
     function _authorizeUpgrade(address) internal override onlyManager { }
 
-    function pause() external onlyRole(PAUSER_ROLE) {
+    function pause() external onlyManager {
         super._pause();
     }
 
-    function unpause() external onlyRole(PAUSER_ROLE) {
+    function unpause() external onlyManager {
         super._unpause();
     }
 

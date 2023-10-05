@@ -14,9 +14,8 @@ contract TestBase is PRBTest, StdCheats {
     uint256 constant WAD = 1e18;
 
     address internal MANAGER = address(0x1);
-    address internal PAUSER = address(0x2);
-    address internal alice = address(0x3);
-    address internal bob = address(0x4);
+    address internal alice = address(0x2);
+    address internal bob = address(0x3);
 
     function setUp() public virtual {
         mach = new MockERC20("MACH", "MACH", 18);

@@ -44,8 +44,7 @@ contract Migrator_Test is TestBase {
             config.maturity,
             config.bonusPeriod,
             config.minDeposit,
-            MANAGER,
-            PAUSER
+            MANAGER
         );
 
         uint256 sufficientAmount = 1_000_000_000e18;
@@ -67,8 +66,7 @@ contract Migrator_Basic_Test is Migrator_Test {
             0,
             0,
             0,
-            MANAGER,
-            PAUSER
+            MANAGER
         );
     }
 
@@ -86,8 +84,7 @@ contract Migrator_Basic_Test is Migrator_Test {
             0,
             0,
             0,
-            MANAGER,
-            PAUSER
+            MANAGER
         );
     }
 
@@ -99,6 +96,10 @@ contract Migrator_Basic_Test is Migrator_Test {
 
 
 contract Migrator_Pause is Migrator_Test {
+    function test_RevertWhen_NotManager() public {
+        vm.expectRevert(UpgradeableBase.NotManager.selector);
+        migrator.pause();
+    }
 }
 
 contract Migrator_Deposit is Migrator_Test {
@@ -113,6 +114,14 @@ contract Migrator_Deposit is Migrator_Test {
         uint256 amount = migrator.minDeposit() - 1;
         vm.expectRevert("Less than minDeposit");
         migrator.deposit(amount);
+    }
+
+    function test_RevertWhen_Paused() public {
+        changePrank(MANAGER);
+        migrator.pause();
+
+        vm.expectRevert("Pausable: paused");
+        migrator.deposit(1);
     }
 
     function test_TwoDeposits_ShouldBeDifferent() public {
@@ -184,6 +193,15 @@ contract Migrator_Claim_BeforeMaturity is Migrator_One_Deposit_Scenario {
     function setUp() public override {
         super.setUp();
         skip(elapsed);
+    }
+
+    function test_RevertWhen_Paused() public {
+        changePrank(MANAGER);
+        migrator.pause();
+
+        changePrank(alice);
+        vm.expectRevert("Pausable: paused");
+        migrator.claim(0);
     }
 
     // TODO: fuzz test
