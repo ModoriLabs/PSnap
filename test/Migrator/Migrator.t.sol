@@ -20,12 +20,8 @@ contract Migrator_Test is TestBase {
         uint256 minDeposit;
     }
 
-    TestConfig internal config = TestConfig({
-        exchangeRatio: 10e18,
-        maturity: 100 weeks,
-        bonusPeriod: 50 weeks,
-        minDeposit: 10000e18
-    });
+    TestConfig internal config =
+        TestConfig({ exchangeRatio: 10e18, maturity: 100 weeks, bonusPeriod: 50 weeks, minDeposit: 10_000e18 });
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
@@ -59,15 +55,7 @@ contract Migrator_Basic_Test is Migrator_Test {
 
     function test_RevertWhen_InitializeTwice() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        migrator.initialize(
-            IERC20(mach),
-            IERC20(dsp),
-            0,
-            0,
-            0,
-            0,
-            MANAGER
-        );
+        migrator.initialize(IERC20(mach), IERC20(dsp), 0, 0, 0, 0, MANAGER);
     }
 
     function test_RevertWhen_Not_Admin_Upgrade() public {
@@ -77,15 +65,7 @@ contract Migrator_Basic_Test is Migrator_Test {
 
     function test_InitializeImpl() public {
         vm.expectRevert("Initializable: contract is already initialized");
-        migratorImpl.initialize(
-            IERC20(mach),
-            IERC20(dsp),
-            0,
-            0,
-            0,
-            0,
-            MANAGER
-        );
+        migratorImpl.initialize(IERC20(mach), IERC20(dsp), 0, 0, 0, 0, MANAGER);
     }
 
     function test_UpgradeImpl() public {
@@ -93,7 +73,6 @@ contract Migrator_Basic_Test is Migrator_Test {
         migratorImpl.upgradeTo(address(0));
     }
 }
-
 
 contract Migrator_Pause is Migrator_Test {
     function test_RevertWhen_NotManager() public {
@@ -146,7 +125,7 @@ contract Migrator_Deposit is Migrator_Test {
     function test_vault_write_depositTs() public {
         _deposit();
 
-        (,uint256 depositTs,) = migrator.vaults(alice, 0);
+        (, uint256 depositTs,) = migrator.vaults(alice, 0);
         assertEq(depositTs, block.timestamp);
     }
 
@@ -155,7 +134,6 @@ contract Migrator_Deposit is Migrator_Test {
 
         uint256 nextId = migrator.nextVaultId(alice);
         assertEq(nextId, 1);
-
     }
 
     function _deposit() internal {
@@ -164,7 +142,6 @@ contract Migrator_Deposit is Migrator_Test {
         migrator.deposit(amount);
     }
 }
-
 
 contract Migrator_Claim_BeforeDeposit is Migrator_Test {
     function test_RevertWhen_Claim_BeforeDeposit() public {
@@ -272,7 +249,7 @@ contract Migrator_Claim_AfterMaturity_InBonusPeriod is Migrator_One_Deposit_Scen
 
     function test_ExchangeRatio_PlusBonus() public {
         uint256 destAmount = depositAmount * config.exchangeRatio * elapsed / config.maturity / WAD;
-        assertEq(destAmount, 101000e18); // 10000 -> 10000 * 1010% = 101000e18
+        assertEq(destAmount, 101_000e18); // 10000 -> 10000 * 1010% = 101000e18
         uint256 beforeMachBalance = mach.balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(dsp));
@@ -290,7 +267,6 @@ contract Migrator_Claim_AfterMaturity_InBonusPeriod is Migrator_One_Deposit_Scen
         (,, bool active) = migrator.vaults(alice, 0);
         assertFalse(active);
     }
-
 }
 
 contract Migrator_Claim_AfterMaturity_AfterBonusPeriod is Migrator_One_Deposit_Scenario {
@@ -298,13 +274,14 @@ contract Migrator_Claim_AfterMaturity_AfterBonusPeriod is Migrator_One_Deposit_S
 
     function setUp() public override {
         super.setUp();
-        elapsed = config.maturity + config.bonusPeriod + 10000 weeks;
+        elapsed = config.maturity + config.bonusPeriod + 10_000 weeks;
         skip(elapsed);
     }
 
     function test_ExchangeRatio_PlusMaxBonus() public {
-        uint256 destAmount = depositAmount * config.exchangeRatio * (config.maturity + config.bonusPeriod) / config.maturity / WAD;
-        assertEq(destAmount, 150000e18); // 10000 -> 10000 * 1500% = 101000e18
+        uint256 destAmount =
+            depositAmount * config.exchangeRatio * (config.maturity + config.bonusPeriod) / config.maturity / WAD;
+        assertEq(destAmount, 150_000e18); // 10000 -> 10000 * 1500% = 101000e18
         uint256 beforeMachBalance = mach.balanceOf(alice);
 
         vm.expectEmit(true, true, true, true, address(dsp));
@@ -325,8 +302,5 @@ contract Migrator_Claim_AfterMaturity_AfterBonusPeriod is Migrator_One_Deposit_S
 }
 
 contract Migrator_SetConfig is Migrator_Test {
-    function test_RevertWhen_Not_Admin() public {
-
-    }
+    function test_RevertWhen_Not_Admin() public { }
 }
-
