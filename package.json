@@ -8,7 +8,14 @@
     "url": "https://github.com/qpzm"
   },
   "devDependencies": {
-    "prettier": "^3.0.0"
+    "@nomicfoundation/hardhat-foundry": "^1.1.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "dotenv": "^16.3.1",
+    "hardhat": "^2.18.0",
+    "hardhat-deploy": "^0.11.37",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   },
   "keywords": [
     "blockchain",
@@ -21,6 +28,7 @@
   ],
   "private": true,
   "scripts": {
+    "compile": "forge-deploy gen-deployer && forge build",
     "clean": "rm -rf cache out",
     "build": "forge build",
     "lint": "pnpm lint:sol && pnpm prettier:check",
