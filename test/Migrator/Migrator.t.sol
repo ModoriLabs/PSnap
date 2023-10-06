@@ -20,7 +20,12 @@ contract Migrator_Test is TestBase {
         uint256 minDeposit;
     }
 
-    TestConfig internal config;
+    TestConfig internal config = TestConfig({
+        exchangeRatio: 10e18,
+        maturity: 100 weeks,
+        bonusPeriod: 50 weeks,
+        minDeposit: 10000e18
+    });
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
@@ -28,24 +33,19 @@ contract Migrator_Test is TestBase {
         super.setUp();
 
         migratorImpl = new Migrator();
-        migrator = Migrator(address(new ERC1967Proxy(address(migratorImpl), "")));
-
-        config = TestConfig({
-            exchangeRatio: 10e18,
-            maturity: 100 weeks,
-            bonusPeriod: 50 weeks,
-            minDeposit: 10000e18
-        });
-
-        migrator.initialize(
-            IERC20(mach),
-            IERC20(dsp),
-            config.exchangeRatio,
-            config.maturity,
-            config.bonusPeriod,
-            config.minDeposit,
-            MANAGER
+        bytes memory data = abi.encodeCall(
+            Migrator.initialize,
+            (
+                IERC20(mach),
+                IERC20(dsp),
+                config.exchangeRatio,
+                config.maturity,
+                config.bonusPeriod,
+                config.minDeposit,
+                MANAGER
+            )
         );
+        migrator = Migrator(address(new ERC1967Proxy(address(migratorImpl), data)));
 
         uint256 sufficientAmount = 1_000_000_000e18;
         _faucet(dsp, address(migrator), sufficientAmount);

@@ -1,5 +1,6 @@
 {
-  "name": "@qpzm/dsp-bootstrap-contracts",
+  "name": "@elysia-dev/dsp-bootstrap-contracts",
+  "license": "MIT",
   "description": "",
   "version": "1.0.0",
   "author": {
