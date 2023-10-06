@@ -12,6 +12,8 @@ interface IMigrator {
         bool active;
     }
 
+    event ConfigChanged(uint256 minDeposit);
+
     function deposit(uint256 amount) external;
     function claim(uint256 id) external;
 }
@@ -46,7 +48,10 @@ contract Migrator is UpgradeableBase, IMigrator {
         uint256 _bonusPeriod,
         uint256 _minDeposit,
         address manager
-    ) public initializer {
+    )
+        public
+        initializer
+    {
         __UpgradeableBase_init(manager);
         _grantManagerRole(manager);
 
@@ -59,7 +64,7 @@ contract Migrator is UpgradeableBase, IMigrator {
     }
 
     function deposit(uint256 amount) public whenNotPaused {
-        require (amount >= minDeposit, "Less than minDeposit");
+        require(amount >= minDeposit, "Less than minDeposit");
 
         address sender = _msgSender();
         uint256 vaultId = nextVaultId[sender];
@@ -113,5 +118,10 @@ contract Migrator is UpgradeableBase, IMigrator {
         if (destTokenAmount != 0) {
             destToken.safeTransfer(sender, destTokenAmount);
         }
+    }
+
+    function setConfig(uint256 _minDeposit) external onlyManager {
+        minDeposit = _minDeposit;
+        emit ConfigChanged(_minDeposit);
     }
 }

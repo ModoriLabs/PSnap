@@ -24,13 +24,13 @@ const deployFn: DeployFunction = async function (hre) {
     log: true,
     proxy: {
       proxyContract: 'UUPS',
-      upgradeIndex: 0,
+      upgradeIndex: 3,
       execute: {
         init: {
           methodName: 'initialize',
           args: [
-            DSP,
             MACH,
+            DSP,
             config.exchangeRatio,
             config.maturity,
             config.bonusPeriod,

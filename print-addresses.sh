@@ -7,6 +7,7 @@ if [ -z "$NETWORK" ]; then
   exit 1
 fi
 
+# NOTE: EXPLORER must ends with /
 if [ "$NETWORK" == "baobab" ]; then
   EXPLORER="https://baobab.klaytnscope.com/account/"
 elif [ "$NETWORK" == "cypress" ]; then
@@ -16,7 +17,7 @@ elif [ "$NETWORK" == "bsc_testnet" ]; then
 elif [ "$NETWORK" == "bsc" ]; then
   EXPLORER="https://bscscan.com/address/"
 elif [ "$NETWORK" == "sepolia" ]; then
-  EXPLORER="https://sepolia.etherscan.io/address"
+  EXPLORER="https://sepolia.etherscan.io/address/"
 else
   echo "Invalid network: $NETWORK"
 fi
