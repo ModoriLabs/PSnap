@@ -1,16 +1,16 @@
-import { DeployFunction } from "hardhat-deploy/dist/types"
+import { DeployFunction } from "hardhat-deploy/dist/types";
 
-const ONE_WEEK = 60 * 60 * 24 * 7
-const WAD = (10n ** 18n)
+const ONE_WEEK = 60 * 60 * 24 * 7;
+const WAD = 10n ** 18n;
 
 const deployFn: DeployFunction = async function (hre) {
-  const { deployments, getNamedAccounts } = hre
-  const { deploy, get } = deployments
-  const { deployer} = await getNamedAccounts()
-  const DSP = (await get("DSP")).address
-  const MACH = (await get("MACH")).address
+  const { deployments, getNamedAccounts } = hre;
+  const { deploy, get } = deployments;
+  const { deployer } = await getNamedAccounts();
+  const DSP = (await get("DSP")).address;
+  const MACH = (await get("MACH")).address;
 
-  if(!DSP || !MACH) {
+  if (!DSP || !MACH) {
     console.log("DSP or MACH not deployed yet");
     return;
   }
@@ -20,19 +20,19 @@ const deployFn: DeployFunction = async function (hre) {
     maturity: 143 * ONE_WEEK,
     bonusPeriod: 50 * ONE_WEEK,
     minDeposit: 10000n * WAD,
-    manager: deployer
-  }
+    manager: deployer,
+  };
 
   await deploy("Migrator", {
     contract: "Migrator",
     from: deployer,
     log: true,
     proxy: {
-      proxyContract: 'UUPS',
-      upgradeIndex: 3,
+      proxyContract: "UUPS",
+      upgradeIndex: 0,
       execute: {
         init: {
-          methodName: 'initialize',
+          methodName: "initialize",
           args: [
             MACH,
             DSP,
@@ -40,15 +40,15 @@ const deployFn: DeployFunction = async function (hre) {
             config.maturity,
             config.bonusPeriod,
             config.minDeposit,
-            config.manager
-          ]
-        }
-      }
-    }
-  })
-}
+            config.manager,
+          ],
+        },
+      },
+    },
+  });
+};
 
 // already deployed in testnet, mainnet
-deployFn.tags = ["testnet", "mainnet", "Migrator"]
+deployFn.tags = ["testnet", "mainnet", "Migrator"];
 
-export default deployFn
+export default deployFn;
