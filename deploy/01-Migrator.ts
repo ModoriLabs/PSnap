@@ -10,6 +10,11 @@ const deployFn: DeployFunction = async function (hre) {
   const DSP = (await get("DSP")).address
   const MACH = (await get("MACH")).address
 
+  if(!DSP || !MACH) {
+    console.log("DSP or MACH not deployed yet");
+    return;
+  }
+
   const config = {
     exchangeRatio: 10n * WAD,
     maturity: 143 * ONE_WEEK,
