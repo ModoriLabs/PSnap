@@ -16,6 +16,12 @@ SEPOLIA_PRIVATE_KEY=sepolia 배포시 사용되는 비밀키
 SEPOLIA_RPC_URL=sepolia node rpc 주소
 MAINNET_RPC_URL=mainnet node rpc 주소
 ETHERSCAN_API_KEY= 이더스캔 api 키
+
+# PSnap
+AMOY_RPC_URL=
+AMOY_PRIVATE_KEY=
+POLYGON_PRIVATE_KEY=
+POLYGON_RPC_URL=
 ```
 
 ## Set DSP & MACH address
@@ -27,8 +33,15 @@ Migrator(예치 컨트랙트)를 배포하기 위해서는 MACH, DSP 각각 이�
 
 ## Deploy
 
+### PSnap
+아래 Migrator 배포와 유사합니다. 위의 `.env` 세팅에 새 환경변수들을 추가하신 뒤 실행해주세요.
+```sh
+yarn hardhat deploy --network { amoy | polygon } --tags PSnap
 ```
-yarn hardhat deploy --network { mainnet | sepolia }
+
+### Migrator
+```sh
+yarn hardhat deploy --network { mainnet | sepolia } --tags Migrator
 ```
 
 위 명령어를 실행하면 아래와 같은 결과물을 확인할 수 있습니다. 아래의 결과물에서 `Migrator_Proxy` 주소를 Bootstrap
